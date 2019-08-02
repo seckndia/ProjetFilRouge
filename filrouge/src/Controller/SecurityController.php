@@ -4,6 +4,9 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Entity\Partenaire;
+use App\Entity\Compt;
+use App\Repository\ComptRepository;
+
 use App\Repository\PartenaireRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -27,6 +30,7 @@ class SecurityController extends AbstractController
      * @Route("/register", name="register", methods={"POST"})
 
      */
+    //-------Ajout d'un SupertUser----/////
     public function register(Request $request, UserPasswordEncoderInterface $passwordEncoder, EntityManagerInterface $entityManager, ValidatorInterface $validator)
     {
         $values = json_decode($request->getContent());
@@ -41,15 +45,11 @@ class SecurityController extends AbstractController
             if ($values->role==1) {
                 $user->setRoles(['ROLE_SUPERADMIN']);    
             }
+           
             if ($values->role==2) {
-                $user->setRoles(['ROLE_ADMIN']);    
+                $user->setRoles(['ROLE_CAISSIER']);    
             }
-            if ($values->role==3) {
-                $user->setRoles(['ROLE_CAISIER']);    
-            }
-            if ($values->role==4) {
-                $user->setRoles(['ROLE_USER']);    
-            }
+           
             
             $user->setPhoto($values->photo);
             $user->setCni($values->cni);
@@ -95,6 +95,7 @@ class SecurityController extends AbstractController
     /**
      *@Route("/ajoutpart", name="ajoutpart", methods={"POST"}) 
      */
+     //-------Ajout d'un Partenaire et son Admin ----/////
     public function ajoutpart(Request $request, UserPasswordEncoderInterface $passwordEncoder, EntityManagerInterface $entityManager, ValidatorInterface $validator)
     {
         $values = json_decode($request->getContent());
@@ -112,22 +113,39 @@ class SecurityController extends AbstractController
             $user->setNom($values->nom1);
             $user->setTel($values->tel);
             $user->setAdresse($values->adresse1);
-           
-            if ($values->role==1) {
+        
+            if ($values->role==3) {
                 $user->setRoles(['ROLE_ADMIN']);    
             }
-            if ($values->role==2) {
+          
+            if ($values->role==4) {
                 $user->setRoles(['ROLE_USER']);    
             }
             
             $user->setPhoto($values->photo);
             $user->setCni($values->cni);
-        
             $user->setPartenaire($part);
+            
+            $compt = new Compt();
+                // Enregistrons les informations de date dans des variables
+
+        $jours = date('d');
+        $mois = date('m');
+        $annee = date('Y');
+
+         $heure = date('H');
+         $minute = date('i');
+         $seconde= date('s');
+       $test = $jours.$mois.$annee.$heure.$minute.$seconde;
+          $compt->setNumcompt($test);
+          $compt->setSolde($values->solde);
+          $compt->setPartenaire($part);
+
             $entityManager = $this->getDoctrine()->getManager();
 
             $entityManager->persist($user);
             $entityManager->persist($part);
+            $entityManager->persist($compt);
             $entityManager->flush();
     
             $data = [
@@ -142,20 +160,23 @@ class SecurityController extends AbstractController
      * @Route("/ajoutpartuser", name="ajoutpartuser", methods={"POST"})
      
      */
+     //-------Ajout des users d'un partenaire  ----/////
     public function ajoutpartuser(Request $request, UserPasswordEncoderInterface $passwordEncoder, EntityManagerInterface $entityManager, ValidatorInterface $validator)
     {
         $values = json_decode($request->getContent());
         $user = new User();
+
             $user->setUsername($values->username);
             $user->setPassword($passwordEncoder->encodePassword($user, $values->password));
             $user->setNom($values->nom1);
             $user->setTel($values->tel);
             $user->setAdresse($values->adresse1);
            
-            if ($values->role==1) {
+            if ($values->role==3) {
                 $user->setRoles(['ROLE_ADMIN']);    
             }
-            if ($values->role==2) {
+           
+            if ($values->role==4) {
                 $user->setRoles(['ROLE_USER']);    
             }
             
@@ -165,6 +186,10 @@ class SecurityController extends AbstractController
             $data=json_decode($request->getContent(),true);
             $partenaires=$repo->find($data['partenaire']);
             $user->setPartenaire($partenaires);
+
+            $repo=$this->getDoctrine()->getRepository(Compt::class);
+            $compt=$repo->find($values->compt);
+            $user->setNumcompt($compt);
 
             $entityManager = $this->getDoctrine()->getManager();
 

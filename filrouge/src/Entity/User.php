@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -62,6 +64,21 @@ class User implements UserInterface
      * @ORM\ManyToOne(targetEntity="App\Entity\Partenaire", inversedBy="users")
      */
     private $partenaire;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Depots", mappedBy="caissier")
+     */
+    private $depots;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Compt", inversedBy="users")
+     */
+    private $numcompt;
+
+    public function __construct()
+    {
+        $this->depots = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -204,6 +221,49 @@ class User implements UserInterface
     public function setPartenaire(?Partenaire $partenaire): self
     {
         $this->partenaire = $partenaire;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Depots[]
+     */
+    public function getDepots(): Collection
+    {
+        return $this->depots;
+    }
+
+    public function addDepot(Depots $depot): self
+    {
+        if (!$this->depots->contains($depot)) {
+            $this->depots[] = $depot;
+            $depot->setCaissier($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDepot(Depots $depot): self
+    {
+        if ($this->depots->contains($depot)) {
+            $this->depots->removeElement($depot);
+            // set the owning side to null (unless already changed)
+            if ($depot->getCaissier() === $this) {
+                $depot->setCaissier(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getNumcompt(): ?Compt
+    {
+        return $this->numcompt;
+    }
+
+    public function setNumcompt(?Compt $numcompt): self
+    {
+        $this->numcompt = $numcompt;
 
         return $this;
     }

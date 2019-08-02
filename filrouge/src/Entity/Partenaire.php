@@ -48,9 +48,15 @@ class Partenaire
      */
     private $users;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Compt", mappedBy="partenaire")
+     */
+    private $compts;
+
     public function __construct()
     {
         $this->users = new ArrayCollection();
+        $this->compts = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -143,6 +149,37 @@ class Partenaire
             // set the owning side to null (unless already changed)
             if ($user->getPartenaire() === $this) {
                 $user->setPartenaire(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Compt[]
+     */
+    public function getCompts(): Collection
+    {
+        return $this->compts;
+    }
+
+    public function addCompt(Compt $compt): self
+    {
+        if (!$this->compts->contains($compt)) {
+            $this->compts[] = $compt;
+            $compt->setPartenaire($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCompt(Compt $compt): self
+    {
+        if ($this->compts->contains($compt)) {
+            $this->compts->removeElement($compt);
+            // set the owning side to null (unless already changed)
+            if ($compt->getPartenaire() === $this) {
+                $compt->setPartenaire(null);
             }
         }
 

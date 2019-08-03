@@ -11,6 +11,7 @@ use App\Entity\Depots;
 use App\Entity\User;
 use App\Repository\PartenaireRepository;
 use App\Repository\UserRepository;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 use App\Repository\ComptRepository;
 use App\Repository\DepotsRepository;
@@ -21,7 +22,9 @@ use App\Form\DepotType;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-
+/**
+ * @Route("/api")
+ */
 class PartenaireController extends AbstractController
 {
     /**
@@ -34,16 +37,18 @@ class PartenaireController extends AbstractController
         ]);
     }
     /**
-     * @Route("/compt", name="compt")
+     * @Route("/ajoutcompt", name="compt")
+     * @IsGranted("ROLE_SUPERADMIN")
      
      */
+
     //-----------AjoutCompt--------------///////////
     public function ajoutcompt(Request $request, EntityManagerInterface $entityManager, ValidatorInterface $validator) 
     {          
          $values = json_decode($request->getContent());
 
           $compt = new Compt();
-          // Enregistrons les informations de date dans des variables
+     // Enregistrons les informations de date dans des variables
 
         $jours = date('d');
         $mois = date('m');
@@ -55,6 +60,7 @@ class PartenaireController extends AbstractController
        $test = $jours.$mois.$annee.$heure.$minute.$seconde;
           $compt->setNumcompt($test);
           $compt->setSolde($values->solde);
+
           $repo=$this->getDoctrine()->getRepository(Partenaire::class);
           $data=json_decode($request->getContent(),true);
           $partenaires=$repo->find($data['partenaire']);
@@ -75,6 +81,7 @@ class PartenaireController extends AbstractController
 
     /**
      * @Route("/depot", name="depot", methods={"POST"})
+     * @IsGranted("ROLE_CAISSIER")
      
      */
     public function depot(Request $request,EntityManagerInterface $entityManager,DepotsRepository $repo ): Response
@@ -83,7 +90,13 @@ class PartenaireController extends AbstractController
 
         $depot = new Depots();
         $depot->setDateDepot(new \DateTime());
-        $depot->setMontant($values->montant);
+        if($values->montant>=75000){
+            $depot->setMontant($values->montant);
+
+        }
+        else{
+            echo"Veillez saisir un montant qui est superieur ou égal à 75000";
+        }
         
         $data=json_decode($request->getContent(),true);
         $repo=$this->getDoctrine()->getRepository(Compt::class);

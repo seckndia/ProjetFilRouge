@@ -22,7 +22,8 @@ public function __construct(UserPasswordEncoderInterface $encoder)
          $user = new User();
          $user->setUsername("cheikh");
          $user->setRoles(['ROLE_SUPERADMIN']);
-         $user->setPassword("test");
+         $password = $this->encoder->encodePassword($user, 'test');
+         $user->setPassword($password);
          $user->setNom("seck");
          $user->setTel(778931215);
          $user->setAdresse("adresse");

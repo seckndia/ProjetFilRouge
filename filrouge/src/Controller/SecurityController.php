@@ -28,9 +28,11 @@ class SecurityController extends AbstractController
 {
     /**
      * @Route("/register", name="register", methods={"POST"})
+     * @IsGranted("ROLE_SUPERADMIN")
 
      */
-    //-------Ajout d'un SupertUser----/////
+
+    //-------Ajout d'un SupertUser et Caissier----/////
     public function register(Request $request, UserPasswordEncoderInterface $passwordEncoder, EntityManagerInterface $entityManager, ValidatorInterface $validator)
     {
         $values = json_decode($request->getContent());
@@ -55,13 +57,6 @@ class SecurityController extends AbstractController
             $user->setCni($values->cni);
           
 
-            // $errors = $validator->validate($user);
-            // if(count($errors)) {
-            //     $errors = $serializer->serialize($errors, 'json');
-            //     return new Response($errors, 500, [
-            //         'Content-Type' => 'application/json'
-            //     ]);
-            // }
             $entityManager->persist($user);
             $entityManager->flush();
 
@@ -94,9 +89,10 @@ class SecurityController extends AbstractController
     }
     /**
      *@Route("/ajoutpart", name="ajoutpart", methods={"POST"}) 
+     *@IsGranted("ROLE_SUPERADMIN")
      */
-     //-------Ajout d'un Partenaire et son Admin ----/////
-    public function ajoutpart(Request $request, UserPasswordEncoderInterface $passwordEncoder, EntityManagerInterface $entityManager, ValidatorInterface $validator)
+     //-------Ajout d'un Partenaire et son Admin et Compt ----/////
+    public function ajoutpart(Request $request, UserPasswordEncoderInterface $passwordEncoder, EntityManagerInterface $entityManager , ValidatorInterface $validator)
     {
         $values = json_decode($request->getContent());
 
@@ -106,6 +102,22 @@ class SecurityController extends AbstractController
          $part->setNinea($values->ninea);
          $part->setRaisonsocial($values->raisonsocial);
          $part->setStatus('Active');
+          
+         $compt = new Compt();
+         // Enregistrons les informations de date dans des variables
+         
+                 $jours = date('d');
+                 $mois = date('m');
+                 $annee = date('Y');
+         
+                  $heure = date('H');
+                  $minute = date('i');
+                  $seconde= date('s');
+                $test = $jours.$mois.$annee.$heure.$minute.$seconde;
+                   $compt->setNumcompt($test);
+                   $compt->setSolde($values->solde);
+                   $compt->setPartenaire($part);
+         
        
          $user = new User();
             $user->setUsername($values->username);
@@ -125,22 +137,8 @@ class SecurityController extends AbstractController
             $user->setPhoto($values->photo);
             $user->setCni($values->cni);
             $user->setPartenaire($part);
-            
-            $compt = new Compt();
-                // Enregistrons les informations de date dans des variables
-
-        $jours = date('d');
-        $mois = date('m');
-        $annee = date('Y');
-
-         $heure = date('H');
-         $minute = date('i');
-         $seconde= date('s');
-       $test = $jours.$mois.$annee.$heure.$minute.$seconde;
-          $compt->setNumcompt($test);
-          $compt->setSolde($values->solde);
-          $compt->setPartenaire($part);
-
+            $user->setNumcompt($compt);
+           
             $entityManager = $this->getDoctrine()->getManager();
 
             $entityManager->persist($user);
@@ -158,6 +156,7 @@ class SecurityController extends AbstractController
     }
     /**
      * @Route("/ajoutpartuser", name="ajoutpartuser", methods={"POST"})
+     * @IsGranted("ROLE_ADMIN")
      
      */
      //-------Ajout des users d'un partenaire  ----/////

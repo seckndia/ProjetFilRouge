@@ -36,7 +36,9 @@ class SecurityController extends AbstractController
     public function register(Request $request, UserPasswordEncoderInterface $passwordEncoder, EntityManagerInterface $entityManager, ValidatorInterface $validator)
     {
         $values = json_decode($request->getContent());
-        if(isset($values->username,$values->password)) {
+        $a=$this->controlespace($values->nom);
+        if(!empty($values->username)&& !empty($values->password) && $a==true && !empty($values->nom) && !empty($values->tel) 
+        && !empty($values->adresse) && !empty($values->cni)) {
             $user = new User();
             $user->setUsername($values->username);
             $user->setPassword($passwordEncoder->encodePassword($user, $values->password));
@@ -69,7 +71,7 @@ class SecurityController extends AbstractController
         }
         $data = [
             'status' => 500,
-            'message' => 'Vous devez renseigner les clés username et password'
+            'message' => 'Vous devez renseigner toutes les champs'
         ];
         return new JsonResponse($data, 500);
         
@@ -95,7 +97,8 @@ class SecurityController extends AbstractController
     public function ajoutpart(Request $request, UserPasswordEncoderInterface $passwordEncoder, EntityManagerInterface $entityManager , ValidatorInterface $validator)
     {
         $values = json_decode($request->getContent());
-
+   if(!empty($values->nom) && !empty($values->adresse) && !empty($values->ninea) && !empty($values->raisonsocial))
+     {
          $part = new Partenaire();
          $part->setNom($values->nom);
          $part->setAdresse($values->adresse);
@@ -154,6 +157,7 @@ class SecurityController extends AbstractController
             return new JsonResponse($data, 201);
 
     }
+}
     /**
      * @Route("/ajoutpartuser", name="ajoutpartuser", methods={"POST"})
      * @IsGranted("ROLE_ADMIN")
@@ -163,6 +167,10 @@ class SecurityController extends AbstractController
     public function ajoutpartuser(Request $request, UserPasswordEncoderInterface $passwordEncoder, EntityManagerInterface $entityManager, ValidatorInterface $validator)
     {
         $values = json_decode($request->getContent());
+        if(!empty($values->username) && !empty($values->password) && !empty($values->nom1) && !empty($values->tel) && !empty($values->cni)
+        ){
+
+  
         $user = new User();
 
             $user->setUsername($values->username);
@@ -200,6 +208,22 @@ class SecurityController extends AbstractController
             ];
 
             return new JsonResponse($data, 201);
+
+    }
+}
+    public function controlespace($test)
+    {
+      $taill= strlen($test);
+      $result=true;
+      for ($i=0; $i <$taill ; $i++) { 
+          if ($test[$i]== " ") {
+              $result=false;
+          }
+          else {
+              $result=true;break;
+          }
+      }
+      return $result;
 
     }
 

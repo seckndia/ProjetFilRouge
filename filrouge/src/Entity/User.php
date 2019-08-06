@@ -41,7 +41,7 @@ class User implements UserInterface
     private $nom;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer"),unique=true
      */
     private $tel;
 
@@ -56,7 +56,7 @@ class User implements UserInterface
     private $photo;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255),unique=true
      */
     private $cni;
 
@@ -71,7 +71,7 @@ class User implements UserInterface
     private $depots;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Compt", inversedBy="users")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Compt", inversedBy="users"),unique=true
      */
     private $numcompt;
 
